@@ -1,0 +1,89 @@
+# Манифест развертывания приложения в кластере
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyecho
+  namespace: test
+  labels:
+    app: pyecho
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: pyecho
+      labels:
+        app: pyecho
+    spec:
+      containers:
+        - name: pyecho
+          image: registry.dp.zyfra.com/aleksey_shamanov/echo:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TELEPRESENCE_CONTEXT_PATH
+              value: /test
+            - name: TELEPRESENCE_VERBOSE
+              value: "3"
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            timeoutSeconds: 10
+            initialDelaySeconds: 10
+            httpGet:
+              path: /health/readiness
+              port: http
+          livenessProbe:
+            timeoutSeconds: 10
+            initialDelaySeconds: 10
+            httpGet:
+              path: /health/liveness
+              port: http
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      imagePullSecrets:
+        - name: aleksey-shamanov-test-pull-secret
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: pyecho
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyecho
+  namespace: test
+spec:
+  selector:
+    app: pyecho
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pyecho
+  namespace: test
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: study.dp.zyfra.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: pyecho
+                port:
+                  name: http
+            path: /test
+            pathType: Exact
+  tls:
+    - hosts:
+        - study.dp.zyfra.com
