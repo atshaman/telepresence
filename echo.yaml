@@ -22,7 +22,7 @@ spec:
             - name: TELEPRESENCE_CONTEXT_PATH
               value: /test
             - name: TELEPRESENCE_VERBOSE
-              value: "3"
+              value: "1"
           ports:
             - containerPort: 8080
               name: http

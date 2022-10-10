@@ -23,7 +23,8 @@ async def health(request):
 @click.option("-p", "--port", default=8080, type=int)
 @click.option("-c", "--context-path", default="/", type=str)
 @click.option("-v", "--verbose", type=int, count=True)
-def main(port, context_path, verbose):
+@click.option('-i', '--interface', type=str, help='Интерфейс для привязки', default='0.0.0.0')
+def main(port, context_path, verbose, interface):
     logger.remove()
     routes = []
     if verbose:
@@ -44,10 +45,10 @@ def main(port, context_path, verbose):
         aiohttp.web.get(context_path + "{text}", echo)
     ]
     logger.debug(routes)
-    logger.info(f"Сервис запущен на порту {port}, context {context_path}")
+    logger.info(f"Сервис запущен на порту {interface}:{port}, context {context_path}")
     app = aiohttp.web.Application()
     app.add_routes(routes)
-    aiohttp.web.run_app(app, port=port)
+    aiohttp.web.run_app(app, port=port, host=interface)
 
 
 if __name__ == "__main__":
