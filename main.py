@@ -10,7 +10,17 @@ LOGLEVELS = {1: "ERROR", 2: "INFO", 3: "DEBUG"}
 
 async def echo(request):
     logger.debug(request)
-    return aiohttp.web.Response(text=f"Hello {request.match_info['text']}!")
+    return aiohttp.web.Response(text=f"Simple echo {request.match_info['text']}!")
+
+
+async def hello(request):
+    logger.debug(request)
+    return aiohttp.web.Response(text='Hello!')
+
+
+async def bye(request):
+    logger.debug(request)
+    return aiohttp.web.Response(text='Goodbye!!')
 
 
 async def health(request):
@@ -42,6 +52,8 @@ def main(port, context_path, verbose, interface):
     routes += [
         aiohttp.web.get(context_path + "health/liveness", health),
         aiohttp.web.get(context_path + "health/readiness", health),
+        aiohttp.web.get(context_path + 'hello', hello),
+        aiohttp.web.get(context_path + 'bye', bye),
         aiohttp.web.get(context_path + "{text}", echo)
     ]
     logger.debug(routes)
